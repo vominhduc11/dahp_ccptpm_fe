@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom'; // Add this import
 import {
     closeModal as closeModalLogin,
     openModal as openModalLogin
@@ -19,10 +20,14 @@ import {
 import { setError as setErrorRegister } from '../../stores/slices/Layout/user/Header/registerErrorSlice';
 import { setError as setErrorLogin } from '../../stores/slices/Layout/user/Header/loginErrorSlice';
 import axios from 'axios';
+import { setRegisterSuccess } from '../../stores/slices/Layout/user/Header/registerSuccessSlice';
 
 const Header = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate(); // Add this hook
 
+    // Add state for success message
+    const registerSuccess = useSelector((state) => state.registerSuccess);
     const isLoginModalOpen = useSelector((state) => state.isLoginModalOpen);
     const isRegisterModalOpen = useSelector((state) => state.isRegisterModalOpen);
     const loginForm = useSelector((state) => state.loginForm);
@@ -67,9 +72,18 @@ const Header = () => {
             .post(`${import.meta.env.VITE_API_URL}/auth/login`, loginForm)
             .then((response) => {
                 console.log('login successful:', response.data);
+                // Store tokens in localStorage
+                localStorage.setItem('token', response.data.token);
+                localStorage.setItem('refreshToken', response.data.refreshToken);
+
+                // Close login modal
+                dispatch(closeModalLogin());
+
+                // Redirect to home page
+                navigate('/');
             })
             .catch((error) => {
-                console.error('Error during registration:', error.response.data);
+                dispatch(setErrorLogin(error.response.data.error));
             });
     };
 
@@ -102,9 +116,23 @@ const Header = () => {
             .post(`${import.meta.env.VITE_API_URL}/auth/register`, registerForm)
             .then((response) => {
                 console.log('Registration successful:', response.data);
+                // Set success state
+                dispatch(setRegisterSuccess());
+
+                // Clear the register form
+                dispatch(setUsernameRegister(''));
+                dispatch(setPasswordRegister(''));
+                dispatch(setConfirmPasswordRegister(''));
+
+                // Show success message for 2 seconds, then switch to login modal
+                setTimeout(() => {
+                    setRegisterSuccess(false);
+                    dispatch(closeModalRegister());
+                    dispatch(openModalLogin());
+                }, 2000);
             })
             .catch((error) => {
-                console.error('Error during registration:', error.response.data);
+                dispatch(setErrorRegister(error.response.data.error));
             });
     };
 
@@ -537,8 +565,29 @@ const Header = () => {
                                 </button>
                             </div>
 
+                            {/* Success Message Display Area */}
+                            {registerSuccess && (
+                                <div className="mb-4 p-3 bg-green-900/50 border border-green-500 rounded-md text-sm text-green-200">
+                                    <div className="flex items-center">
+                                        <svg
+                                            className="w-5 h-5 mr-2 text-green-500 flex-shrink-0"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        <span>Đăng ký tài khoản thành công! Đang chuyển đến trang đăng nhập...</span>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Error Message Display Area */}
-                            {registerError !== '' && (
+                            {!registerSuccess && registerError !== '' && (
                                 <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-md text-sm text-red-200">
                                     <div className="flex items-center">
                                         <svg

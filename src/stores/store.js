@@ -5,6 +5,8 @@ import loginFormSlice from './slices/Layout/user/Header/loginFormSlice';
 import registerFormSlice from './slices/Layout/user/Header/registerFormSlice';
 import registerErrorSlice from './slices/Layout/user/Header/registerErrorSlice';
 import loginErrorSlice from './slices/Layout/user/Header/loginErrorSlice';
+import registerSuccessSlice from './slices/Layout/user/Header/registerSuccessSlice';
+import roleSlice from './slices/Context/AuthContext/roleSlice';
 
 const store = configureStore({
     reducer: {
@@ -14,7 +16,10 @@ const store = configureStore({
         registerForm: registerFormSlice,
         registerFormSlice: registerFormSlice,
         registerError: registerErrorSlice,
-        loginError: loginErrorSlice
+        loginError: loginErrorSlice,
+        registerSuccess: registerSuccessSlice,
+
+        role: roleSlice
     }
 });
 
