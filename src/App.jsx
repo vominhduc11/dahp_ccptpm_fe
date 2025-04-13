@@ -3,7 +3,7 @@ import UserRoute from './routes/user';
 import AdminRoute from './routes/admin';
 
 function App() {
-    let routes = useRoutes(AdminRoute);
+    let routes = useRoutes(UserRoute);
 
     return routes;
 }

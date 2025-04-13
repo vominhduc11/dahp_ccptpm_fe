@@ -1,8 +1,36 @@
-import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    closeModal as closeModalLogin,
+    openModal as openModalLogin
+} from '../../stores/slices/Layout/user/Header/isLoginModalOpenSlice';
+import {
+    closeModal as closeModalRegister,
+    openModal as openModalRegister
+} from '../../stores/slices/Layout/user/Header/isRegisterModalOpenSlice';
+import {
+    setUsername as setUsernameLogin,
+    setPassword as setPasswordLogin
+} from '../../stores/slices/Layout/user/Header/loginFormSlice';
+import {
+    setUsername as setUsernameRegister,
+    setPassword as setPasswordRegister,
+    setConfirmPassword as setConfirmPasswordRegister
+} from '../../stores/slices/Layout/user/Header/registerFormSlice';
+import { setError as setErrorRegister } from '../../stores/slices/Layout/user/Header/registerErrorSlice';
+import { setError as setErrorLogin } from '../../stores/slices/Layout/user/Header/loginErrorSlice';
+import axios from 'axios';
 
 const Header = () => {
+    const dispatch = useDispatch();
+
+    const isLoginModalOpen = useSelector((state) => state.isLoginModalOpen);
+    const isRegisterModalOpen = useSelector((state) => state.isRegisterModalOpen);
+    const loginForm = useSelector((state) => state.loginForm);
+    const registerForm = useSelector((state) => state.registerForm);
+    const loginError = useSelector((state) => state.loginError);
+    const registerError = useSelector((state) => state.registerError);
     // Assuming user is logged in for the demo
-    const isAuthenticated = true;
+    const isAuthenticated = false;
     const currentUser = {
         name: 'John Doe',
         email: 'john@example.com',
@@ -14,8 +42,71 @@ const Header = () => {
     const isScrolled = true;
     const isMobileMenuOpen = false;
     const isUserMenuOpen = false;
-    const isLoginModalOpen = false;
-    const isRegisterModalOpen = false;
+
+    const handleSubmitLogin = (event) => {
+        event.preventDefault();
+        // Add your form submission logic here
+        if (loginForm.username === '' || loginForm.password === '') {
+            dispatch(setErrorLogin('Vui lòng nhập đầy đủ thông tin'));
+            return;
+        } else if (!/^[a-zA-Z0-9_]+$/.test(loginForm.username)) {
+            dispatch(setErrorLogin('Username không hợp lệ'));
+            return;
+        } else if (loginForm.password.length < 8) {
+            dispatch(setErrorLogin('Password tối thiểu 8 ký tự'));
+            return;
+        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(loginForm.password)) {
+            dispatch(
+                setErrorLogin('Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường, một số và một ký tự đặc biệt')
+            );
+            return;
+        } else {
+            dispatch(setErrorLogin(''));
+        }
+        axios
+            .post(`${import.meta.env.VITE_API_URL}/auth/login`, loginForm)
+            .then((response) => {
+                console.log('login successful:', response.data);
+            })
+            .catch((error) => {
+                console.error('Error during registration:', error.response.data);
+            });
+    };
+
+    const handleSubmitRegister = (event) => {
+        event.preventDefault();
+        // Add your registration form submission logic here
+        if (registerForm.username === '' || registerForm.password === '' || registerForm.confirmPassword === '') {
+            dispatch(setErrorRegister('Vui lòng nhập đầy đủ thông tin'));
+            return;
+        } else if (!/^[a-zA-Z0-9_]+$/.test(registerForm.username)) {
+            dispatch(setErrorRegister('Username không hợp lệ'));
+            return;
+        } else if (registerForm.password.length < 8) {
+            dispatch(setErrorRegister('Password tối thiểu 8 ký tự'));
+            return;
+        } else if (
+            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(registerForm.password)
+        ) {
+            dispatch(
+                setErrorRegister('Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường, một số và một ký tự đặc biệt')
+            );
+            return;
+        } else if (registerForm.password !== registerForm.confirmPassword) {
+            dispatch(setErrorRegister('Mật khẩu không khớp'));
+            return;
+        } else {
+            dispatch(setErrorRegister(''));
+        }
+        axios
+            .post(`${import.meta.env.VITE_API_URL}/auth/register`, registerForm)
+            .then((response) => {
+                console.log('Registration successful:', response.data);
+            })
+            .catch((error) => {
+                console.error('Error during registration:', error.response.data);
+            });
+    };
 
     return (
         <>
@@ -142,11 +233,17 @@ const Header = () => {
                             ) : (
                                 /* User Menu - Not Authenticated */
                                 <div className="flex items-center space-x-2">
-                                    <button className="login-open-button text-white hover:text-red-500 transition-colors duration-300 text-sm">
+                                    <button
+                                        onClick={() => dispatch(openModalLogin())}
+                                        className="login-open-button text-white hover:text-red-500 transition-colors duration-300 text-sm"
+                                    >
                                         Đăng nhập
                                     </button>
                                     <span className="text-gray-500">|</span>
-                                    <button className="register-open-button text-white hover:text-red-500 transition-colors duration-300 text-sm">
+                                    <button
+                                        onClick={() => dispatch(openModalRegister())}
+                                        className="register-open-button text-white hover:text-red-500 transition-colors duration-300 text-sm"
+                                    >
                                         Đăng ký
                                     </button>
                                 </div>
@@ -249,7 +346,7 @@ const Header = () => {
                 </div>
             </header>
 
-            {/* Login Modal (hidden in static version) */}
+            {/* Login Modal */}
             {isLoginModalOpen && (
                 <div className="fixed inset-0 z-50 overflow-auto flex items-center justify-center px-4 backdrop-blur-sm animate-fadeIn">
                     <div className="absolute inset-0 bg-black bg-opacity-60 animate-opacityIn"></div>
@@ -257,7 +354,10 @@ const Header = () => {
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-bold">Đăng nhập</h3>
-                                <button className="text-gray-400 hover:text-white transition-colors">
+                                <button
+                                    onClick={() => dispatch(closeModalLogin())}
+                                    className="text-gray-400 hover:text-white transition-colors"
+                                >
                                     <svg
                                         className="w-5 h-5"
                                         fill="currentColor"
@@ -273,16 +373,38 @@ const Header = () => {
                                 </button>
                             </div>
 
-                            <form>
+                            {/* Error Message Display Area */}
+                            {loginError !== '' && (
+                                <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-md text-sm text-red-200">
+                                    <div className="flex items-center">
+                                        <svg
+                                            className="w-5 h-5 mr-2 text-red-500 flex-shrink-0"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        <span>{loginError}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            <form onSubmit={handleSubmitLogin}>
                                 <div className="mb-4">
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-                                        Email
+                                    <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
+                                        Username
                                     </label>
                                     <input
-                                        type="email"
-                                        id="email"
+                                        onChange={(e) => dispatch(setUsernameLogin(e.currentTarget.value))}
+                                        type="text"
+                                        id="username"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-                                        placeholder="your@email.com"
+                                        placeholder="username"
                                     />
                                 </div>
 
@@ -296,6 +418,7 @@ const Header = () => {
                                         </a>
                                     </div>
                                     <input
+                                        onChange={(e) => dispatch(setPasswordLogin(e.currentTarget.value))}
                                         type="password"
                                         id="password"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -325,7 +448,12 @@ const Header = () => {
                             <div className="mt-6 text-center">
                                 <p className="text-sm text-gray-400">
                                     Chưa có tài khoản?{' '}
-                                    <button className="text-red-500 hover:text-red-400 font-medium">
+                                    <button
+                                        onClick={() => {
+                                            dispatch(closeModalLogin()), dispatch(openModalRegister());
+                                        }}
+                                        className="text-red-500 hover:text-red-400 font-medium"
+                                    >
                                         Đăng ký ngay
                                     </button>
                                 </p>
@@ -382,7 +510,7 @@ const Header = () => {
                 </div>
             )}
 
-            {/* Register Modal (hidden in static version) */}
+            {/* Register Modal */}
             {isRegisterModalOpen && (
                 <div className="fixed inset-0 z-50 overflow-auto flex items-center justify-center px-4 backdrop-blur-sm animate-fadeIn">
                     <div className="absolute inset-0 bg-black bg-opacity-60 animate-opacityIn"></div>
@@ -390,7 +518,10 @@ const Header = () => {
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-bold">Đăng ký tài khoản</h3>
-                                <button className="text-gray-400 hover:text-white transition-colors">
+                                <button
+                                    onClick={() => dispatch(closeModalRegister())}
+                                    className="text-gray-400 hover:text-white transition-colors"
+                                >
                                     <svg
                                         className="w-5 h-5"
                                         fill="currentColor"
@@ -406,31 +537,41 @@ const Header = () => {
                                 </button>
                             </div>
 
-                            <form>
-                                <div className="mb-4">
-                                    <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
-                                        Họ và tên
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="name"
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-                                        placeholder="Nguyễn Văn A"
-                                    />
+                            {/* Error Message Display Area */}
+                            {registerError !== '' && (
+                                <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-md text-sm text-red-200">
+                                    <div className="flex items-center">
+                                        <svg
+                                            className="w-5 h-5 mr-2 text-red-500 flex-shrink-0"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        <span>{registerError}</span>
+                                    </div>
                                 </div>
+                            )}
 
+                            <form onSubmit={handleSubmitRegister}>
                                 <div className="mb-4">
                                     <label
-                                        htmlFor="register-email"
+                                        htmlFor="register-username"
                                         className="block text-sm font-medium text-gray-300 mb-1"
                                     >
-                                        Email
+                                        Username
                                     </label>
                                     <input
-                                        type="email"
-                                        id="register-email"
+                                        onChange={(e) => dispatch(setUsernameRegister(e.currentTarget.value))}
+                                        type="text"
+                                        id="register-username"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-                                        placeholder="your@email.com"
+                                        placeholder="username"
                                     />
                                 </div>
 
@@ -442,6 +583,7 @@ const Header = () => {
                                         Mật khẩu
                                     </label>
                                     <input
+                                        onChange={(e) => dispatch(setPasswordRegister(e.currentTarget.value))}
                                         type="password"
                                         id="register-password"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -457,6 +599,7 @@ const Header = () => {
                                         Xác nhận mật khẩu
                                     </label>
                                     <input
+                                        onChange={(e) => dispatch(setConfirmPasswordRegister(e.currentTarget.value))}
                                         type="password"
                                         id="confirm-password"
                                         className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -475,7 +618,14 @@ const Header = () => {
                             <div className="mt-6 text-center">
                                 <p className="text-sm text-gray-400">
                                     Đã có tài khoản?{' '}
-                                    <button className="text-red-500 hover:text-red-400 font-medium">Đăng nhập</button>
+                                    <button
+                                        onClick={() => {
+                                            dispatch(openModalLogin()), dispatch(closeModalRegister());
+                                        }}
+                                        className="text-red-500 hover:text-red-400 font-medium"
+                                    >
+                                        Đăng nhập
+                                    </button>
                                 </p>
                             </div>
 

@@ -1,11 +1,20 @@
 import { configureStore } from '@reduxjs/toolkit';
-import counterReducer from './slices/counterSlice';
-import loggedSlice from './slices/loggedSlice';
+import isLoginModalOpenSlice from './slices/Layout/user/Header/isLoginModalOpenSlice';
+import isRegisterModalOpenSlice from './slices/Layout/user/Header/isRegisterModalOpenSlice';
+import loginFormSlice from './slices/Layout/user/Header/loginFormSlice';
+import registerFormSlice from './slices/Layout/user/Header/registerFormSlice';
+import registerErrorSlice from './slices/Layout/user/Header/registerErrorSlice';
+import loginErrorSlice from './slices/Layout/user/Header/loginErrorSlice';
 
 const store = configureStore({
     reducer: {
-        counter: counterReducer,
-        isLogged: loggedSlice
+        isLoginModalOpen: isLoginModalOpenSlice,
+        isRegisterModalOpen: isRegisterModalOpenSlice,
+        loginForm: loginFormSlice,
+        registerForm: registerFormSlice,
+        registerFormSlice: registerFormSlice,
+        registerError: registerErrorSlice,
+        loginError: loginErrorSlice
     }
 });
 

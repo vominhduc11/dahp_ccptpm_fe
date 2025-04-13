@@ -1,55 +1,9 @@
 import { Link } from 'react-router-dom';
+import recentActivities from '../../Data/recentActivities';
+import mockStats from '../../Data/mockStats';
+import activeRooms from '../../Data/activeRooms';
 
 const Dashboard = () => {
-    // Static mock data
-    const mockStats = {
-        totalUsers: 1254,
-        activeUsers: 98,
-        totalMovies: 427,
-        newUsersToday: 15,
-        activeRooms: 3,
-        totalWatched: 8753,
-        revenue: '$5,280'
-    };
-
-    // Mock recent activities
-    const recentActivities = [
-        { id: 1, type: 'room_created', user: 'Admin', movie: 'The Last Voyage', time: '10 minutes ago' },
-        { id: 2, type: 'user_banned', user: 'Admin', targetUser: 'spammer123', time: '25 minutes ago' },
-        { id: 3, type: 'movie_added', user: 'Content Manager', movie: 'Virtual Horizon', time: '1 hour ago' },
-        { id: 4, type: 'room_closed', user: 'Admin', movie: 'City of Shadows', time: '2 hours ago' },
-        { id: 5, type: 'user_created', user: 'System', targetUser: 'newuser456', time: '3 hours ago' },
-        { id: 6, type: 'movie_updated', user: 'Content Manager', movie: "Ocean's Secret", time: '5 hours ago' }
-    ];
-
-    // Mock active rooms data
-    const activeRooms = [
-        {
-            id: 101,
-            movieId: 1,
-            movieTitle: 'The Last Voyage',
-            posterPath: 'https://via.placeholder.com/40x40?text=Movie1',
-            activeViewers: 24,
-            startedAt: '2023-05-01T14:30:00Z'
-        },
-        {
-            id: 102,
-            movieId: 2,
-            movieTitle: 'Virtual Horizon',
-            posterPath: 'https://via.placeholder.com/40x40?text=Movie2',
-            activeViewers: 18,
-            startedAt: '2023-05-01T15:15:00Z'
-        },
-        {
-            id: 103,
-            movieId: 3,
-            movieTitle: "Ocean's Secret",
-            posterPath: 'https://via.placeholder.com/40x40?text=Movie3',
-            activeViewers: 31,
-            startedAt: '2023-05-01T16:00:00Z'
-        }
-    ];
-
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Dashboard content */}
